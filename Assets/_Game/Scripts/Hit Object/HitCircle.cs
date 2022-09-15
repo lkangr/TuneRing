@@ -11,7 +11,7 @@ public class HitCircle : MonoBehaviour
 
     public void SetPositionAndLayer(float posX, float posY, int layer)
     {
-        GetComponent<RectTransform>().anchoredPosition = new Vector2(posX + 100, posY - 100);
+        GetComponent<RectTransform>().anchoredPosition = new Vector2(posX + 64, posY - 48);
 
         GetComponent<SpriteRenderer>().sortingOrder = layer;
         sliderFollowCircle.GetComponent<SpriteRenderer>().sortingOrder = layer;
