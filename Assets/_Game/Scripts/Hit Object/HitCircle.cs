@@ -6,11 +6,19 @@ public class HitCircle : MonoBehaviour
 {
     public GameObject sliderFollowCircle;
 
+    public Sprite missSprite;
+
     private float lifeTime = 1f;
     [NonSerialized] public bool inLifeTime = false;
 
-    public void SetPositionAndLayer(float posX, float posY, int layer)
+    private bool autoMode;
+    private  int layer;
+
+    public void SetPositionAndLayer(float posX, float posY, int layer, bool autoMode)
     {
+        this.autoMode = autoMode;
+        this.layer = layer;
+
         GetComponent<RectTransform>().anchoredPosition = new Vector2(posX + 64, posY - 48);
 
         GetComponent<SpriteRenderer>().sortingOrder = layer;
@@ -26,12 +34,40 @@ public class HitCircle : MonoBehaviour
         if (inLifeTime)
         {
             lifeTime -= Time.fixedDeltaTime;
-            if (lifeTime <= 0)
+
+            if (autoMode && lifeTime <= 0)
+            {
+                Hit();
+                gameObject.name = "...";
+                GameBroker.CursorTo(-layer + 1);
+            }
+            else if (lifeTime < -0.3f)
             {
                 inLifeTime = false;
-                Sequence s = DOTween.Sequence();
-                s.Append(transform.DOMoveY(transform.position.y + 0.5f, 0.5f).OnComplete(() => Destroy(gameObject)));
-                s.Join(GetComponent<SpriteRenderer>().DOFade(0, 0.5f));
+                GetComponent<SpriteRenderer>().sprite = missSprite;
+                DOVirtual.DelayedCall(0.5f, () => Destroy(gameObject));
+
+                //Sequence s = DOTween.Sequence();
+                //s.Append(transform.DOMoveY(transform.position.y + 0.5f, 0.5f).OnComplete(() => Destroy(gameObject)));
+                //s.Join(GetComponent<SpriteRenderer>().DOFade(0, 0.5f));
+            }
+        }
+    }
+
+    public void Hit()
+    {
+        if (inLifeTime)
+        {
+            if (lifeTime >= 0.3f)
+            {
+                transform.DOShakePosition(0.1f, 10);
+            }
+            else if (lifeTime < 0.3f)
+            {
+                inLifeTime = false;
+                gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+                GetComponent<AudioSource>().Play();
+                transform.DOScale(1.2f, 0.15f).OnComplete(() => Destroy(gameObject));
             }
         }
     }

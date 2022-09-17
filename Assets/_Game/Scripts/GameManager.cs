@@ -7,9 +7,6 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Cursor")]
-    public Transform cursor;
-
     [Header("Background")]
     public BackGround bg;
     public Image maskIngame;
@@ -28,21 +25,19 @@ public class GameManager : MonoBehaviour
     [Header("------------------------------------")]
     [SerializeField] private Vector2 resolution;
 
-    private Camera MainCamera;
     private Vector2 screenScale;
 
-    private List<CircleDetail> listCircle = new List<CircleDetail>();
+    public List<CircleDetail> listCircle = new List<CircleDetail>();
     private int currCircle;
 
     private bool preIngame = false;
     private float timePreIngame;
     private bool inGame = false;
 
+    private bool autoMode = false;
+
     void Start()
     {
-        MainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-        Cursor.visible = false;
-
         var canvas = GameObject.FindGameObjectWithTag("MasterCanvas").GetComponent<RectTransform>();
         screenScale = new Vector2(canvas.sizeDelta.x / resolution.x, canvas.sizeDelta.y / resolution.y);
 
@@ -51,26 +46,25 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        var mousePosition = MainCamera.ScreenToWorldPoint(Input.mousePosition);
-        cursor.position = new Vector3(mousePosition.x, mousePosition.y, 10);
-
         if (inGame)
         {
             if (Input.GetKeyDown(KeyCode.BackQuote))
             {
-                EndGame();
+                GameBroker.EndGame();
             }
 
             if (!audioSource.isPlaying)
             {
-                EndGame();
+                GameBroker.EndGame();
             }
         }
     }
 
-    public void Play()
+    public void Play(bool autoMode)
     {
         InGameView.Show();
+
+        this.autoMode = autoMode;
 
         listCircle.Clear();
         currCircle = 0;
@@ -95,11 +89,16 @@ public class GameManager : MonoBehaviour
         }));
     }
 
-    private void EndGame()
+    public void EndGame()
     {
         audioSource.Stop();
 
         inGame = false;
+
+        for (int i = 0; i < hitCircleContainer.childCount; i++)
+        {
+            Destroy(hitCircleContainer.GetChild(i).gameObject);
+        }
 
         maskIngame.color = new Color(0, 0, 0, 0);
 
@@ -115,7 +114,11 @@ public class GameManager : MonoBehaviour
                 (inGame && audioSource.time >= circle.time - 1f))
             {
                 var obj = Instantiate(hitCirclePrefabs, hitCircleContainer).GetComponent<HitCircle>();
-                obj.SetPositionAndLayer(circle.posX * screenScale.x, -circle.posY * screenScale.y, -currCircle);
+                obj.SetPositionAndLayer(circle.posX * screenScale.x, -circle.posY * screenScale.y, -currCircle, autoMode);
+                if (autoMode && currCircle == 0)
+                {
+                    GameBroker.CursorTo(0);
+                }
                 currCircle++;
             }
         }

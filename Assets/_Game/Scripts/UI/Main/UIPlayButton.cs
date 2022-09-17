@@ -5,6 +5,8 @@ public class UIPlayButton : MonoBehaviour
 {
     public Button button;
 
+    public Toggle autoMode;
+
     private void Reset()
     {
         if (!button) button = GetComponent<Button>();
@@ -17,6 +19,6 @@ public class UIPlayButton : MonoBehaviour
 
     private void OnPlayButtonClick()
     {
-        GameBroker.PlayGame();
+        GameBroker.PlayGame(autoMode.isOn);
     }
 }
