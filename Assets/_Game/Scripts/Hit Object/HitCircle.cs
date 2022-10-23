@@ -26,7 +26,7 @@ public class HitCircle : MonoBehaviour
         lifeTime = 1f;
         inLifeTime = true;
 
-        sliderFollowCircle.transform.DOScale(new Vector3(0.48f, 0.48f, 1), 1f).OnComplete(() => Destroy(sliderFollowCircle.gameObject));
+        sliderFollowCircle.transform.DOScale(new Vector3(0.48f, 0.48f, 1), 1f).SetEase(Ease.Linear).OnComplete(() => Destroy(sliderFollowCircle.gameObject));
     }
 
     private void FixedUpdate()
@@ -67,7 +67,7 @@ public class HitCircle : MonoBehaviour
                 inLifeTime = false;
                 gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 GetComponent<AudioSource>().Play();
-                transform.DOScale(1.2f, 0.15f).OnComplete(() => Destroy(gameObject));
+                transform.DOScale(1.2f, 0.1f).OnComplete(() => Destroy(gameObject));
             }
         }
     }

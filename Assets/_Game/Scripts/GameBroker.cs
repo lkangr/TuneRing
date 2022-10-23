@@ -60,4 +60,9 @@ public class GameBroker : Singleton<GameBroker>
         }
     }
     #endregion
+
+    public static void ProcessSong()
+    {
+        Ins.GameManager.ProcessSong();
+    }
 }
