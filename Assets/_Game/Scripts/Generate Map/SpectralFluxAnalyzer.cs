@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,12 +55,10 @@ public class SpectralFluxAnalyzer
 		spectrum.CopyTo(curSpectrum, 0);
 	}
 
-	public List<CircleDetail> AnalyzeSpectrum(List<SpectralFluxInfo> data, float adjCoeff) //float[] spectrum, float time)
+	public void AnalyzeSpectrum(List<SpectralFluxInfo> data, float adjCoeff, List<CircleDetail> listCircle) //float[] spectrum, float time)
 	{
 		spectralFluxSamples = data;
 		maxAdjustmentCoeff = adjCoeff;
-
-		List<CircleDetail> listCircle = new List<CircleDetail>();
 
 		for (int i = 0; i < spectralFluxSamples.Count; i++)
 		{
@@ -85,10 +82,10 @@ public class SpectralFluxAnalyzer
 			if (curPeak)
 			{
 				spectralFluxSamples[indexToDetectPeak].isPeak = true;
-				listCircle.Add(new CircleDetail(300, 220, spectralFluxSamples[indexToDetectPeak].time));
+				listCircle.Add(new CircleDetail(320, 240, spectralFluxSamples[indexToDetectPeak].time));
 			}
 		}
-		return listCircle;
+		PositionCalculation.CalculatePosition(listCircle);
 	}
 
 	float CalculateRectifiedSpectralFlux()

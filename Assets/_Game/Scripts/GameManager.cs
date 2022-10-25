@@ -30,7 +30,8 @@ public class GameManager : MonoBehaviour
     [Header("------------------------------------")]
     [SerializeField] private Vector2 resolution;
 
-    private Vector2 screenScale;
+    private float screenScale;
+    private Vector2 screenOffset;
 
     public List<CircleDetail> listCircle = new List<CircleDetail>();
     private int currCircle;
@@ -47,15 +48,18 @@ public class GameManager : MonoBehaviour
     int numChannels;
     float clipLength;
     int sampleRate;
-    const int numSamples = 1024;
     SpectralFluxAnalyzer preProcessedSpectralFluxAnalyzer;
     bool ispreprocess = false;
 
     void Start()
     {
         var canvas = GameObject.FindGameObjectWithTag("MasterCanvas").GetComponent<RectTransform>();
-        screenScale = new Vector2(canvas.sizeDelta.x / resolution.x, canvas.sizeDelta.y / resolution.y);
 
+        if (((canvas.sizeDelta.x - 200)/ (canvas.sizeDelta.y - 200)) > (resolution.x / resolution.y))
+            screenScale = (canvas.sizeDelta.y - 200) / resolution.y;
+        else screenScale = (canvas.sizeDelta.x - 200) / resolution.x;
+
+        screenOffset = new Vector2((canvas.sizeDelta.x - resolution.x * screenScale) / 2, (canvas.sizeDelta.y - resolution.y * screenScale) / 2);
         MainView.Show();
     }
 
@@ -132,7 +136,7 @@ public class GameManager : MonoBehaviour
                 (inGame && audioSource.time >= circle.time - 1f))
             {
                 var obj = Instantiate(hitCirclePrefabs, hitCircleContainer).GetComponent<HitCircle>();
-                obj.SetPositionAndLayer(circle.posX * screenScale.x, -circle.posY * screenScale.y, -currCircle, autoMode);
+                obj.SetPositionAndLayer(circle.posX * screenScale + screenOffset.x, -circle.posY * screenScale - screenOffset.y, -currCircle, autoMode);
                 if (autoMode && currCircle == 0)
                 {
                     GameBroker.CursorTo(0);
@@ -197,7 +201,7 @@ public class GameManager : MonoBehaviour
             Debug.Log(preProcessedSamples.Length);
 
             // Once we have our audio sample data prepared, we can execute an FFT to return the spectrum data over the time domain
-            int spectrumSampleSize = numSamples;
+            int spectrumSampleSize = 1024;
             int iterations = preProcessedSamples.Length / spectrumSampleSize;
 
             FFT fft = new FFT();
@@ -239,7 +243,7 @@ public class GameManager : MonoBehaviour
                 //};
             }
 
-            listCircle = preProcessedSpectralFluxAnalyzer.AnalyzeSpectrum(spectralFluxSamples, maxAdjustmentCoeff);
+            preProcessedSpectralFluxAnalyzer.AnalyzeSpectrum(spectralFluxSamples, maxAdjustmentCoeff, listCircle);
             Debug.Log("Spectrum Analysis done");
             Debug.Log("Background Thread Completed");
 
