@@ -142,6 +142,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+#region generate map
     public float getTimeFromIndex(int index)
     {
         return ((1f / (float)this.sampleRate) * index);
@@ -250,3 +251,4 @@ public class GameManager : MonoBehaviour
         }
     }
 }
+#endregion

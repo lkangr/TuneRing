@@ -70,7 +70,6 @@ public class HitCircle : MonoBehaviour
                 Sequence ss = DOTween.Sequence();
                 ss.Append(transform.DOScale(1.2f, 0.1f)); //.OnComplete(() => Destroy(gameObject));
                 ss.Join(GetComponent<SpriteRenderer>().DOFade(0f, 0.1f));
-                ss.Join(GetComponentInChildren<SpriteRenderer>().DOFade(0f, 0.1f));
                 ss.AppendCallback(() => Destroy(gameObject));
             }
         }
