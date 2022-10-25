@@ -41,10 +41,12 @@ public class InGameCursor : MonoBehaviour
         }
         else if (waitToNextCircle)
         {
-            if (GameBroker.Ins.GameManager.hitCircleContainer.childCount > 0)
+            var hitCircle = GameBroker.Ins.GameManager.hitCircleContainer.Find("HitCircle(Clone)");
+
+            if (hitCircle)
             {
                 waitToNextCircle = false;
-                To(GameBroker.Ins.GameManager.hitCircleContainer.GetChild(0).position, 1f);
+                To(hitCircle.position, 1f);
             }
         }
     }
