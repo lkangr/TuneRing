@@ -204,6 +204,7 @@ public class GameManager : MonoBehaviour
 
             Debug.Log(string.Format("Processing {0} time domain samples for FFT", iterations));
             double[] sampleChunk = new double[spectrumSampleSize];
+            float maxAdjustmentCoeff = 0f;
             List<SpectralFluxInfo> spectralFluxSamples = new List<SpectralFluxInfo>();
             for (int i = 0; i < iterations; i++)
             {
@@ -223,7 +224,12 @@ public class GameManager : MonoBehaviour
                 // These 1024 magnitude values correspond (roughly) to a single point in the audio timeline
                 float curSongTime = getTimeFromIndex(i) * spectrumSampleSize;
 
-                spectralFluxSamples.Add(new SpectralFluxInfo(Array.ConvertAll(scaledFFTSpectrum, x => (float)x), curSongTime, sampleChunk));
+                float sum = 0f;
+                foreach (var a in sampleChunk) sum += (float)a;
+                var adjustmentCoeff = Mathf.Abs(sum / sampleChunk.Length);
+                if (maxAdjustmentCoeff < adjustmentCoeff) maxAdjustmentCoeff = adjustmentCoeff;
+
+                spectralFluxSamples.Add(new SpectralFluxInfo(Array.ConvertAll(scaledFFTSpectrum, x => (float)x), curSongTime, adjustmentCoeff));
 
                 // Send our magnitude data off to our Spectral Flux Analyzer to be analyzed for peaks
                 //if (preProcessedSpectralFluxAnalyzer.analyzeSpectrum(Array.ConvertAll(scaledFFTSpectrum, x => (float)x), curSongTime))
@@ -232,7 +238,7 @@ public class GameManager : MonoBehaviour
                 //};
             }
 
-            listCircle = preProcessedSpectralFluxAnalyzer.AnalyzeSpectrum(spectralFluxSamples);
+            listCircle = preProcessedSpectralFluxAnalyzer.AnalyzeSpectrum(spectralFluxSamples, maxAdjustmentCoeff);
             Debug.Log("Spectrum Analysis done");
             Debug.Log("Background Thread Completed");
 

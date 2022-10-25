@@ -5,16 +5,17 @@ using UnityEngine;
 
 public class SpectralFluxInfo
 {
-	public SpectralFluxInfo(float[] spectrum, float time, double[] sampleChunk)
+	public SpectralFluxInfo(float[] spectrum, float time, float adjCoeff)
     {
 		this.spectrum = spectrum;
 		this.time = time;
-		this.sampleChunk = sampleChunk;
+
+		this.adjustmentCoeff = adjCoeff;
     }
 
 	public float[] spectrum;
 	public float time;
-	public double[] sampleChunk;
+	public float adjustmentCoeff;
 
 	public float spectralFlux;
 	public float threshold;
@@ -28,17 +29,18 @@ public class SpectralFluxAnalyzer
 
 	// Sensitivity multiplier to scale the average threshold.
 	// In this case, if a rectified spectral flux sample is > 1.5 times the average, it is a peak
-	float thresholdMultiplier = 3f;  //1.5f
+	float thresholdMultiplier = 3f;  // default 3f
 
 	// Number of samples to average in our window
-	int thresholdWindowSize = 50; //50
+	int thresholdWindowSize = 10; // default 10
+
+	float maxAdjustmentCoeff;
+	float adjustFactor = 0.0001f; // default 0.0001f
 
 	public List<SpectralFluxInfo> spectralFluxSamples;
 
 	float[] curSpectrum;
 	float[] prevSpectrum;
-
-	double[] sampleSpectrum;
 
 	public SpectralFluxAnalyzer()
 	{
@@ -46,27 +48,25 @@ public class SpectralFluxAnalyzer
 
 		curSpectrum = new float[numSamples];
 		prevSpectrum = new float[numSamples];
-
-		sampleSpectrum = new double[numSamples];
 	}
 
-	public void SetCurSpectrum(float[] spectrum, double[] sample)
+	public void SetCurSpectrum(float[] spectrum)
 	{
 		curSpectrum.CopyTo(prevSpectrum, 0);
 		spectrum.CopyTo(curSpectrum, 0);
-		sample.CopyTo(sampleSpectrum, 0);
 	}
 
-	public List<CircleDetail> AnalyzeSpectrum(List<SpectralFluxInfo> data) //float[] spectrum, float time)
+	public List<CircleDetail> AnalyzeSpectrum(List<SpectralFluxInfo> data, float adjCoeff) //float[] spectrum, float time)
 	{
 		spectralFluxSamples = data;
+		maxAdjustmentCoeff = adjCoeff;
 
 		List<CircleDetail> listCircle = new List<CircleDetail>();
 
 		for (int i = 0; i < spectralFluxSamples.Count; i++)
 		{
 			// Set spectrum
-			SetCurSpectrum(spectralFluxSamples[i].spectrum, spectralFluxSamples[i].sampleChunk);
+			SetCurSpectrum(spectralFluxSamples[i].spectrum);
 
 			// Get current spectral flux from spectrum
 			spectralFluxSamples[i].spectralFlux = CalculateRectifiedSpectralFlux();
@@ -116,13 +116,19 @@ public class SpectralFluxAnalyzer
 			sum += spectralFluxSamples[i].spectralFlux;
 		}
 
-		double sumb = 0f;
-		foreach (var a in sampleSpectrum) sumb += (1 - a);
-		var avgb = (sumb / sampleSpectrum.Length) / 2 + 1;
-
 		// Return the average multiplied by our sensitivity multiplier
 		float avg = sum / (windowEndIndex - windowStartIndex);
-		return avg * thresholdMultiplier * (float)avgb;
+
+        var coeff = 1 + MathF.Log(spectralFluxSamples[spectralFluxIndex].adjustmentCoeff / maxAdjustmentCoeff, adjustFactor);
+
+		//float sumb = 0f;
+		//foreach (var a in spectralFluxSamples[spectralFluxIndex].spectrum) sumb += a;
+		//float avgb = sumb / spectralFluxSamples[spectralFluxIndex].spectrum.Length;
+
+		//if (spectralFluxIndex < 100) Debug.Log(spectralFluxIndex + ": " + avgb);
+		//if (spectralFluxIndex < 100) Debug.Log(spectralFluxIndex + ": " + spectralFluxSamples[spectralFluxIndex].adjustmentCoeff);
+
+		return avg * thresholdMultiplier * coeff;
 	}
 
 	float GetPrunedSpectralFlux(int spectralFluxIndex)
