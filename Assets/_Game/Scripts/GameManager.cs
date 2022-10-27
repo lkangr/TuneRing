@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using DSPLib;
 using Vector2 = UnityEngine.Vector2;
 using System.Threading;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,8 +28,13 @@ public class GameManager : MonoBehaviour
     public Transform hitCircleContainer;
     public GameObject hitCirclePrefabs;
 
+    [Header("Preprocess Song")]
+    public GameObject maskProcess;
+    public TextMeshProUGUI textProcess;
+
     [Header("------------------------------------")]
     [SerializeField] private Vector2 resolution;
+    public static Vector2 Resolution { get { return GameBroker.Ins.GameManager.resolution; } }
 
     private float screenScale;
     private Vector2 screenOffset;
@@ -43,13 +49,14 @@ public class GameManager : MonoBehaviour
     private bool autoMode = false;
 
     //process song
-    float[] multiChannelSamples;
-    int numTotalSamples;
-    int numChannels;
-    float clipLength;
-    int sampleRate;
-    SpectralFluxAnalyzer preProcessedSpectralFluxAnalyzer;
-    bool ispreprocess = false;
+    private float[] multiChannelSamples;
+    private int numTotalSamples;
+    private int numChannels;
+    private float clipLength;
+    private int sampleRate;
+    private SpectralFluxAnalyzer preProcessedSpectralFluxAnalyzer;
+    private bool ispreprocess = false;
+    private bool changeProcessState = false;
 
     void Start()
     {
@@ -76,6 +83,12 @@ public class GameManager : MonoBehaviour
             {
                 GameBroker.EndGame();
             }
+        }
+
+        if (changeProcessState)
+        {
+            changeProcessState = false;
+            SetMaskProcess();
         }
     }
 
@@ -136,7 +149,7 @@ public class GameManager : MonoBehaviour
                 (inGame && audioSource.time >= circle.time - 1f))
             {
                 var obj = Instantiate(hitCirclePrefabs, hitCircleContainer).GetComponent<HitCircle>();
-                obj.SetPositionAndLayer(circle.posX * screenScale + screenOffset.x, -circle.posY * screenScale - screenOffset.y, -currCircle, autoMode);
+                obj.SetPositionAndLayer(circle.posX * screenScale + screenOffset.x, circle.posY * screenScale + screenOffset.y, -currCircle, autoMode);
                 if (autoMode && currCircle == 0)
                 {
                     GameBroker.CursorTo(0);
@@ -147,6 +160,20 @@ public class GameManager : MonoBehaviour
     }
 
 #region generate map
+    public void SetMaskProcess()
+    {
+        maskProcess.SetActive(!maskProcess.activeSelf);
+        if (maskProcess.activeSelf)
+        {
+            textProcess.DOFade(1f, 1f).SetEase(Ease.Linear).SetLoops(-1, LoopType.Yoyo);
+        }
+        else
+        {
+            textProcess.DOKill();
+            textProcess.DOFade(0f, 0f);
+        }
+    }
+
     public float getTimeFromIndex(int index)
     {
         return ((1f / (float)this.sampleRate) * index);
@@ -154,6 +181,8 @@ public class GameManager : MonoBehaviour
 
     public void ProcessSong()
     {
+        changeProcessState = true;
+
         preProcessedSpectralFluxAnalyzer = new SpectralFluxAnalyzer();
         listCircle.Clear();
         ispreprocess = true;
@@ -246,6 +275,8 @@ public class GameManager : MonoBehaviour
             preProcessedSpectralFluxAnalyzer.AnalyzeSpectrum(spectralFluxSamples, maxAdjustmentCoeff, listCircle);
             Debug.Log("Spectrum Analysis done");
             Debug.Log("Background Thread Completed");
+
+            changeProcessState = true;
 
         }
         catch (Exception e)
