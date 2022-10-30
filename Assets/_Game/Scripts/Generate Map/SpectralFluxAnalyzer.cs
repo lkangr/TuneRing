@@ -31,9 +31,8 @@ public class SpectralFluxAnalyzer
 	float thresholdMultiplier = 3f;  // default 3f
 
 	// Number of samples to average in our window
-	int thresholdWindowSize = 10; // default 10
+	int thresholdWindowSize = 30; // default 30
 
-	float maxAdjustmentCoeff;
 	float adjustFactor = 0.0001f; // default 0.0001f
 
 	public List<SpectralFluxInfo> spectralFluxSamples;
@@ -55,10 +54,9 @@ public class SpectralFluxAnalyzer
 		spectrum.CopyTo(curSpectrum, 0);
 	}
 
-	public void AnalyzeSpectrum(List<SpectralFluxInfo> data, float adjCoeff, List<CircleDetail> listCircle) //float[] spectrum, float time)
+	public void AnalyzeSpectrum(List<SpectralFluxInfo> data,List<CircleDetail> listCircle) //float[] spectrum, float time)
 	{
 		spectralFluxSamples = data;
-		maxAdjustmentCoeff = adjCoeff;
 
 		for (int i = 0; i < spectralFluxSamples.Count; i++)
 		{
@@ -116,14 +114,7 @@ public class SpectralFluxAnalyzer
 		// Return the average multiplied by our sensitivity multiplier
 		float avg = sum / (windowEndIndex - windowStartIndex);
 
-        var coeff = 1 + MathF.Log(spectralFluxSamples[spectralFluxIndex].adjustmentCoeff / maxAdjustmentCoeff, adjustFactor);
-
-		//float sumb = 0f;
-		//foreach (var a in spectralFluxSamples[spectralFluxIndex].spectrum) sumb += a;
-		//float avgb = sumb / spectralFluxSamples[spectralFluxIndex].spectrum.Length;
-
-		//if (spectralFluxIndex < 100) Debug.Log(spectralFluxIndex + ": " + avgb);
-		//if (spectralFluxIndex < 100) Debug.Log(spectralFluxIndex + ": " + spectralFluxSamples[spectralFluxIndex].adjustmentCoeff);
+        var coeff = 1 + MathF.Log(spectralFluxSamples[spectralFluxIndex].adjustmentCoeff, adjustFactor);
 
 		return avg * thresholdMultiplier * coeff;
 	}
