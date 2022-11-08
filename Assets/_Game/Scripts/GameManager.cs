@@ -149,7 +149,7 @@ public class GameManager : MonoBehaviour
                 (inGame && audioSource.time >= circle.time - 1f))
             {
                 var obj = Instantiate(hitCirclePrefabs, hitCircleContainer).GetComponent<HitCircle>();
-                obj.SetPositionAndLayer(circle.posX * screenScale + screenOffset.x, circle.posY * screenScale + screenOffset.y, -currCircle, autoMode);
+                obj.SetPositionAndLayer(circle.posX * screenScale + screenOffset.x, circle.posY * screenScale + screenOffset.y, circle.color, circle.numDis, -currCircle, autoMode);
                 if (autoMode && currCircle == 0)
                 {
                     GameBroker.CursorTo(0);
