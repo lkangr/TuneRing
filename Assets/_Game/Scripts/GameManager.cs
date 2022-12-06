@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using DSPLib;
@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
     public AudioSource audioSource;
 
     [Header("Map")]
-    public DefaultAsset mapFile;
+    public TextAsset mapFile;
 
     [Header("Hit Circle")]
     public Transform hitCircleContainer;
@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
         if (!ispreprocess)
         {
             listCircle.Clear();
-            var map = new StreamReader(AssetDatabase.GetAssetPath(mapFile)).ReadToEnd().Split("\n");
+            var map = mapFile.text.Split("\n");
             foreach (var line in map)
             {
                 var data = line.Split(",");
