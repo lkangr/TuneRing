@@ -156,7 +156,7 @@ MonoBehaviour:
   maskIngame: {fileID: 1203038267}
   imageTemp: {fileID: 21300000, guid: 3ab692b7f7f7a574ea459d33a94f0309, type: 3}
   audioSource: {fileID: 1958441220}
-  mapFile: {fileID: 102900000, guid: 86bdcc07e4c1705458ddfcb21c011662, type: 3}
+  mapFile: {fileID: 2811297602134710623, guid: 86bdcc07e4c1705458ddfcb21c011662, type: 3}
   hitCircleContainer: {fileID: 872465898}
   hitCirclePrefabs: {fileID: 626316510005809419, guid: d315e0123fc07264884dc12514fd4faf, type: 3}
   maskProcess: {fileID: 1226062147}

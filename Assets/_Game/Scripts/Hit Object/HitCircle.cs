@@ -68,6 +68,7 @@ public class HitCircle : MonoBehaviour
             {
                 inLifeTime = false; 
                 gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+                numberInCircle.gameObject.SetActive(false);
                 GetComponent<SpriteRenderer>().sprite = missSprite;
                 DOVirtual.DelayedCall(0.5f, () => Destroy(gameObject));
 
