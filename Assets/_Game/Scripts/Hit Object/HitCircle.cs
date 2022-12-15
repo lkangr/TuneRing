@@ -70,6 +70,9 @@ public class HitCircle : MonoBehaviour
                 gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 numberInCircle.gameObject.SetActive(false);
                 GetComponent<SpriteRenderer>().sprite = missSprite;
+
+                GameBroker.Ins.GameManager.onMissCircle.Invoke();
+
                 DOVirtual.DelayedCall(0.5f, () => Destroy(gameObject));
 
                 //Sequence s = DOTween.Sequence();
@@ -95,6 +98,8 @@ public class HitCircle : MonoBehaviour
 
                 numberInCircle.gameObject.SetActive(false);
                 GetComponent<SpriteMask>().enabled = false;
+
+                GameBroker.Ins.GameManager.onHitCircle.Invoke(Mathf.Abs(lifeTime) < 0.1f);
 
                 Sequence ss = DOTween.Sequence();
                 ss.Append(transform.DOScale(1.2f, 0.1f)); //.OnComplete(() => Destroy(gameObject));

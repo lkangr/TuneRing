@@ -8,9 +8,12 @@ using DSPLib;
 using Vector2 = UnityEngine.Vector2;
 using System.Threading;
 using TMPro;
+using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
+    #region variable
+    #region editor variable
     [Header("Background")]
     public BackGround bg;
     public Image maskIngame;
@@ -33,7 +36,9 @@ public class GameManager : MonoBehaviour
     [Header("------------------------------------")]
     [SerializeField] private Vector2 resolution;
     public static Vector2 Resolution { get { return GameBroker.Ins.GameManager.resolution; } }
+    #endregion
 
+    #region game variable
     private float screenScale;
     private Vector2 screenOffset;
 
@@ -45,8 +50,20 @@ public class GameManager : MonoBehaviour
     private bool inGame = false;
 
     private bool autoMode = false;
+    #endregion
 
-    //process song
+    //score
+    private float score = 0;
+
+    private int combo = 0;
+    private int sumCircle;
+    private int scorePerCircle;
+
+    [NonSerialized] public UnityEvent<bool> onHitCircle = new UnityEvent<bool>();
+    [NonSerialized] public UnityEvent onMissCircle = new UnityEvent();
+    [NonSerialized] public UnityEvent<int, int> onUpdateScore = new UnityEvent<int, int>();
+
+    #region process song variable
     private float[] multiChannelSamples;
     private int numTotalSamples;
     private int numChannels;
@@ -55,7 +72,11 @@ public class GameManager : MonoBehaviour
     private SpectralFluxAnalyzer preProcessedSpectralFluxAnalyzer;
     private bool ispreprocess = false;
     private bool changeProcessState = false;
+    #endregion
+    #endregion
 
+
+    #region function
     void Start()
     {
         var canvas = GameObject.FindGameObjectWithTag("MasterCanvas").GetComponent<RectTransform>();
@@ -65,6 +86,10 @@ public class GameManager : MonoBehaviour
         else screenScale = (canvas.sizeDelta.x - 200) / resolution.x;
 
         screenOffset = new Vector2((canvas.sizeDelta.x - resolution.x * screenScale) / 2, (canvas.sizeDelta.y - resolution.y * screenScale) / 2);
+
+        onHitCircle.AddListener(OnHitCircle);
+        onMissCircle.AddListener(OnMissCircle);
+
         MainView.Show();
     }
 
@@ -90,6 +115,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    #region game
     public void Play(bool autoMode)
     {
         InGameView.Show();
@@ -108,6 +134,8 @@ public class GameManager : MonoBehaviour
         }
 
         currCircle = 0;
+
+        ResetScore();
 
         preIngame = true;
         timePreIngame = -2f;
@@ -156,8 +184,43 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    #endregion
 
-#region generate map
+    #region score
+    private void ResetScore()
+    {
+        score = 0;
+        combo = 0;
+        sumCircle = listCircle.Count;
+        scorePerCircle = Mathf.CeilToInt(1000000f / sumCircle);
+
+        UpdateScoreUI();
+    }
+
+    private void UpdateScoreUI()
+    {
+        onUpdateScore.Invoke(Mathf.CeilToInt(score), combo);
+    }
+
+    private void OnHitCircle(bool perfect)
+    {
+        float sc = scorePerCircle * (0.8f + (0.4f * ((float)combo / (sumCircle - 1))));
+        if (!perfect) sc *= 0.8f;
+        combo++;
+        score += sc;
+
+        UpdateScoreUI();
+    }
+
+    private void OnMissCircle()
+    {
+        combo = 0;
+
+        UpdateScoreUI();
+    }
+    #endregion
+
+    #region generate map
     public void SetMaskProcess()
     {
         maskProcess.SetActive(!maskProcess.activeSelf);
@@ -277,4 +340,5 @@ public class GameManager : MonoBehaviour
         }
     }
 }
+#endregion
 #endregion
